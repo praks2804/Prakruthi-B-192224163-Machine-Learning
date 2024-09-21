@@ -1,0 +1,103 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+# Step 1: Generate a Sample Dataset
+# Create a DataFrame with simulated data
+data = {
+    'brand': np.random.choice(['BrandA', 'BrandB', 'BrandC'], size=100),
+    'storage': np.random.choice([32, 64, 128, 256], size=100),
+    'camera': np.random.choice(['Low', 'Medium', 'High'], size=100),
+    'battery': np.random.choice([2000, 3000, 4000, 5000], size=100),
+    'price_range': np.random.choice(['Low', 'Medium', 'High'], size=100)
+}
+
+df = pd.DataFrame(data)
+
+# Step 2: Data Analysis
+print("First five rows:")
+print(df.head())
+
+print("\nBasic statistical computations:")
+print(df.describe(include='all'))
+
+print("\nData types:")
+print(df.dtypes)
+
+# Detect null values
+print("\nNull values in dataset:")
+print(df.isnull().sum())
+
+# Replace nulls with mode (though our dataset has none)
+for column in df.columns:
+    df[column].fillna(df[column].mode()[0], inplace=True)
+
+# Step 3: Data Visualization using heatmap
+plt.figure(figsize=(10, 6))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+plt.title('Heatmap of Features')
+plt.show()
+
+# Step 4: Encode categorical variables
+df_encoded = pd.get_dummies(df, columns=['brand', 'camera'], drop_first=True)
+
+# Step 5: Split data into training and testing sets
+X = df_encoded.drop('price_range', axis=1)
+y = df_encoded['price_range']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 6: Fit Naive Bayes Classifier
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# Step 7: Make predictions
+y_pred = model.predict(X_test)
+
+# Step 8: Find the accuracy of the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"\nAccuracy of the model: {accuracy:.2f}")
+
+
+OUTPUT: 
+
+First five rows:
+    brand  storage  camera  battery price_range
+0  BrandB      128    High     4000         Low
+1  BrandC       64    High     5000         Low
+2  BrandC       64  Medium     4000        High
+3  BrandA       64     Low     5000      Medium
+4  BrandC      256     Low     2000        High
+
+Basic statistical computations:
+         brand     storage camera      battery price_range
+count      100  100.000000    100   100.000000         100
+unique       3         NaN      3          NaN           3
+top     BrandC         NaN   High          NaN      Medium
+freq        44         NaN     36          NaN          39
+mean       NaN  102.400000    NaN  3520.000000         NaN
+std        NaN   75.149951    NaN  1114.459601         NaN
+min        NaN   32.000000    NaN  2000.000000         NaN
+25%        NaN   32.000000    NaN  3000.000000         NaN
+50%        NaN   64.000000    NaN  4000.000000         NaN
+75%        NaN  128.000000    NaN  4250.000000         NaN
+max        NaN  256.000000    NaN  5000.000000         NaN
+
+Data types:
+brand          object
+storage         int64
+camera         object
+battery         int64
+price_range    object
+dtype: object
+
+Null values in dataset:
+brand          0
+storage        0
+camera         0
+battery        0
+price_range    0
+dtype: int64
